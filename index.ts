@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:33:43 2026
 
-@author: Dell
-"""
 
 import app from "./app.js"; // .ts yerine .js uzantısı eklemeyi dene (ESM kuralıdır)
 import { logger } from "./lib/logger.js";
