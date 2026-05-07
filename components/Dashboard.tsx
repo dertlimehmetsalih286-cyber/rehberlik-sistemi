@@ -1,8 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Eğer ui klasörün yoksa burayı "./Card" yapabilirsin
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Users, FileText, Activity, AlertCircle } from "lucide-react";
 
-// Ekran görüntündeki örnek veriler
+// Ekran görüntündeki verilerin birebir aynısı
 const stats = [
   { title: "Toplam Öğrenci", value: "12", icon: Users, color: "text-blue-600" },
   { title: "Değerlendirme", value: "15", icon: FileText, color: "text-green-600" },
@@ -11,28 +12,32 @@ const stats = [
 ];
 
 const decisionData = [
-  { name: "Gerekmiyor", value: 5, color: "#22c55e" },
-  { name: "Gözlem", value: 1, color: "#f97316" },
-  { name: "Yönlendir", value: 3, color: "#ef4444" },
+  { name: "Gerekmiyor", value: 5, color: "#22c55e" }, // Yeşil
+  { name: "Gözlem", value: 1, color: "#f97316" },    // Turuncu
+  { name: "Yönlendir", value: 3, color: "#ef4444" },  // Kırmızı
 ];
 
-export default function Dashboard() {
+const Dashboard = () => {
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-2">Rehberlik Özeti</h1>
-      <p className="text-gray-500 mb-8">Genel öğrenci durumu ve değerlendirme aktiviteleri.</p>
+    <div className="p-8 bg-gray-50 min-h-screen font-sans">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Rehberlik Özeti</h1>
+        <p className="text-gray-500">Genel öğrenci durumu ve değerlendirme aktiviteleri.</p>
+      </div>
 
-      {/* Üst Kartlar */}
+      {/* Üst İstatistik Kartları */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, i) => (
-          <Card key={i}>
+          <Card key={i} className="shadow-sm border-none">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-3xl font-bold">{stat.value}</p>
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <div className={`p-3 rounded-full bg-opacity-10 ${stat.color.replace('text', 'bg')}`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -41,18 +46,20 @@ export default function Dashboard() {
 
       {/* Grafikler Bölümü */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
+        {/* Karar Dağılımı Grafiği */}
+        <Card className="shadow-sm border-none">
           <CardHeader>
-            <CardTitle>Karar Dağılımı</CardTitle>
+            <CardTitle className="text-lg">Karar Dağılımı</CardTitle>
+            <p className="text-xs text-gray-400 font-normal">Tüm değerlendirmelerin sonuç dağılımı</p>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={decisionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip cursor={{fill: 'transparent'}} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                   {decisionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -62,16 +69,26 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Sınıf Bazlı Dağılım (Placeholder) */}
+        <Card className="shadow-sm border-none">
           <CardHeader>
-            <CardTitle>Sınıflara Göre Dağılım</CardTitle>
+            <CardTitle className="text-lg">Sınıflara Göre Dağılım</CardTitle>
+            <p className="text-xs text-gray-400 font-normal">Sınıf bazlı öğrenci sayıları ve yönlendirmeler</p>
           </CardHeader>
-          <CardContent className="h-[300px]">
-             {/* Buraya Sınıf Bazlı Grafik Gelecek */}
-             <p className="text-center text-gray-400 pt-20">Sınıf verileri yükleniyor...</p>
+          <CardContent className="h-[300px] flex items-center justify-center">
+             <div className="text-center">
+               <Activity className="h-12 w-12 text-gray-200 mx-auto mb-2" />
+               <p className="text-gray-400 text-sm">Sınıf verileri grafikleniyor...</p>
+             </div>
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-8 text-center text-xs text-gray-400">
+        Fuzzy Logic Engine v1.0
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
