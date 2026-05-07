@@ -17,4 +17,4 @@ try {
 } catch (err) {
   console.error("GERCEK HATA BURADA:", err);
 }
-});
+
