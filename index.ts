@@ -5,8 +5,8 @@ Created on Thu May  7 12:33:43 2026
 @author: Dell
 """
 
-import app from "./app";
-import { logger } from "./lib/logger";
+import app from "./app.js"; // .ts yerine .js uzantısı eklemeyi dene (ESM kuralıdır)
+import { logger } from "./lib/logger.js";
 
 const rawPort = process.env["PORT"];
 if (!rawPort) throw new Error("PORT environment variable is required.");
