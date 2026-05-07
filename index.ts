@@ -1,15 +1,15 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+import app from "./app.js";
+import { logger } from "./lib/logger.js";
 
 const rawPort = process.env["PORT"];
-if (!rawPort) {
-    console.error("HATA: PORT degiskeni bulunamadi!");
-    process.exit(1);
-}
-const port = Number(rawPort);
-if (Number.isNaN(port) || port <= 0) throw new Error(`Invalid PORT: "${rawPort}"`);
 
-app.listen(port, (err) => {
-  if (err) { logger.error({ err }, "Error listening on port"); process.exit(1); }
-  logger.info({ port }, "Server listening");
+if (!rawPort) {
+  console.error("HATA: Render ayarlarinda PORT (10000) tanimlanmamis!");
+  process.exit(1);
+}
+
+const port = Number(rawPort);
+
+app.listen(port, "0.0.0.0", () => {
+  logger.info({ port }, "🚀 Sunucu basariyla calisti!");
 });
