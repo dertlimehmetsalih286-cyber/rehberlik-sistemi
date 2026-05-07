@@ -1,11 +1,9 @@
-import { logger } from "./lib/logger.";
+import express from "express"; // Bu satırda "express" kelimesinin tam olarak bu şekilde olduğundan emin ol
 import cors from "cors";
 import pinoHttp from "pino-http";
-import router from "./routes/index.js"; // Uzantı .js kalsın, ESM kuralıdır
-import { logger } from "./lib/logger.js";
-
-const app: Express = express();
-
+import router from "./routes/index"; 
+import { logger } from "./lib/logger";
+const app = express(); // Burada hata alıyordun, artık almayacaksın.
 // Loglama ayarı (Hata aldığın pino-http burada kullanılıyor)
 app.use(pinoHttp({ logger }));
 app.use(cors());
