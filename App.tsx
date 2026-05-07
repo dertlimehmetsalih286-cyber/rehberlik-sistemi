@@ -1,48 +1,38 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:38:06 2026
+import React from "react";
+import Dashboard from "./components/Dashboard";
 
-@author: Dell
-"""
-
-import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Layout } from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
-import AssessmentPlayground from "@/pages/AssessmentPlayground";
-import StudentsList from "@/pages/StudentsList";
-import StudentDetail from "@/pages/StudentDetail";
-import SchoolsList from "@/pages/SchoolsList";
-import NotFound from "@/pages/not-found";
-
-const queryClient = new QueryClient();
-
-function Router() {
+function App() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/"              component={Dashboard} />
-        <Route path="/degerlendirme" component={AssessmentPlayground} />
-        <Route path="/ogrenciler"    component={StudentsList} />
-        <Route path="/ogrenciler/:id" component={StudentDetail} />
-        <Route path="/okullar"       component={SchoolsList} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <div className="min-h-screen bg-gray-50">
+      {/* Üst Menü / Navbar (İsteğe Bağlı) */}
+      <nav className="bg-white border-b border-gray-200 px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">R</span>
+            </div>
+            <span className="text-xl font-bold text-gray-800">Rehberlik Sistemi</span>
+          </div>
+          <div className="flex gap-4">
+            <button className="text-sm font-medium text-gray-600 hover:text-blue-600">Admin Paneli</button>
+            <div className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300"></div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Ana İçerik: Dashboard Bileşeni */}
+      <main>
+        <Dashboard />
+      </main>
+
+      {/* Alt Bilgi */}
+      <footer className="py-6 border-t border-gray-200 bg-white">
+        <p className="text-center text-gray-400 text-sm">
+          © 2026 Rehberlik Karar Destek Sistemi - Tüm Hakları Saklıdır.
+        </p>
+      </footer>
+    </div>
   );
 }
 
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-}
+export default App;
