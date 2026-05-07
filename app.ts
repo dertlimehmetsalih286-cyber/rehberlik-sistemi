@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:33:56 2026
 
-@author: Dell
-"""
 
 import express, { type Express } from "express";
 import cors from "cors";
