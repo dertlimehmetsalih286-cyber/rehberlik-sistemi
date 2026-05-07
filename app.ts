@@ -1,97 +1,124 @@
 import express from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
-import path from "path";
 import { logger } from "./lib/logger";
 
 const app = express();
 
-// 1. Temel Ayarlar
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(pinoHttp({ logger }));
 
-// 2. DASHBOARD EKRANI (İstediğin o şık arayüzü buraya HTML olarak gömüyoruz)
+// GEÇİCİ VERİTABANI (Öğrenciler burada tutulacak)
+// Not: Sunucu her yeniden başladığında burası sıfırlanır. Kalıcı olması için veritabanı bağlanmalıdır.
+let ogrenciler = [
+    { id: 1, ad: "Mehmet Salih", numara: "101", puan: 85, durum: "İyi" },
+    { id: 2, ad: "Zeynep", numara: "102", puan: 45, durum: "Gözlem" }
+];
+
 app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="tr">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Rehberlik Sistemi Dashboard</title>
+        <title>Öğretmen & Öğrenci Paneli</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     </head>
-    <body class="bg-gray-50 font-sans">
-        <div class="max-w-7xl mx-auto p-8">
-            <header class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800">Rehberlik Özeti</h1>
-                <p class="text-gray-500">Genel öğrenci durumu ve bulanık mantık değerlendirme sonuçları.</p>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div><p class="text-sm font-medium text-gray-500">Toplam Öğrenci</p><p class="text-2xl font-bold text-blue-600">12</p></div>
-                    <i class="fas fa-users text-2xl text-blue-100 p-3 bg-blue-50 rounded-lg"></i>
+    <body class="bg-slate-50 font-sans">
+        <div class="max-w-5xl mx-auto p-6">
+            <div class="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-slate-100 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-800">Rehberlik Sistemi</h1>
+                    <p class="text-slate-500 mt-1">Öğretmen Kontrol ve Öğrenci Takip Paneli</p>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div><p class="text-sm font-medium text-gray-500">Değerlendirme</p><p class="text-2xl font-bold text-green-600">15</p></div>
-                    <i class="fas fa-file-alt text-2xl text-green-100 p-3 bg-green-50 rounded-lg"></i>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div><p class="text-sm font-medium text-gray-500">Ortalama Puan</p><p class="text-2xl font-bold text-purple-600">55.0</p></div>
-                    <i class="fas fa-chart-line text-2xl text-purple-100 p-3 bg-purple-50 rounded-lg"></i>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div><p class="text-sm font-medium text-gray-500">Dikkat Gereken</p><p class="text-2xl font-bold text-red-600">3</p></div>
-                    <i class="fas fa-exclamation-triangle text-2xl text-red-100 p-3 bg-red-50 rounded-lg"></i>
+                <div class="bg-indigo-50 p-4 rounded-xl text-indigo-600 font-bold">
+                    Toplam: ${ogrenciler.length} Öğrenci
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-semibold mb-6">Karar Dağılımı</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between text-sm mb-1"><span>Gerekmiyor</span><span class="font-bold text-green-600">5</span></div>
-                            <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-green-500 h-2.5 rounded-full" style="width: 55%"></div></div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1"><span>Gözlem</span><span class="font-bold text-orange-600">1</span></div>
-                            <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-orange-500 h-2.5 rounded-full" style="width: 15%"></div></div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1"><span>Yönlendir</span><span class="font-bold text-red-600">3</span></div>
-                            <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-red-500 h-2.5 rounded-full" style="width: 30%"></div></div>
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 sticky top-6">
+                        <h2 class="text-xl font-bold mb-6 text-slate-800 flex items-center">
+                            <i class="fas fa-user-plus mr-2 text-indigo-500"></i> Yeni Öğrenci Ekle
+                        </h2>
+                        <form action="/ekle" method="POST" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Öğrenci Adı</label>
+                                <input type="text" name="ad" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Okul Numarası</label>
+                                <input type="text" name="numara" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Puanı (0-100)</label>
+                                <input type="number" name="puan" min="0" max="100" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 active:scale-95">
+                                Kaydet
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center border-dashed border-2">
-                    <h2 class="text-xl font-semibold mb-4 w-full">Sınıflara Göre Dağılım</h2>
-                    <p class="text-gray-400 italic">Veritabanı senkronize ediliyor...</p>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h2 class="text-xl font-bold text-slate-800">Mevcut Öğrenci Listesi</h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 text-slate-500 text-sm uppercase">
+                                    <tr>
+                                        <th class="p-4 font-semibold">No</th>
+                                        <th class="p-4 font-semibold">Ad Soyad</th>
+                                        <th class="p-4 font-semibold text-center">Puan</th>
+                                        <th class="p-4 font-semibold">Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${ogrenciler.map(o => `
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="p-4 font-mono text-slate-400 text-sm">${o.numara}</td>
+                                            <td class="p-4 font-bold text-slate-700">${o.ad}</td>
+                                            <td class="p-4 text-center">
+                                                <span class="bg-slate-100 px-3 py-1 rounded-full font-bold text-indigo-600">${o.puan}</span>
+                                            </td>
+                                            <td class="p-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-bold ${o.puan >= 50 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                                    ${o.puan >= 50 ? 'GELİŞİM İYİ' : 'DİKKAT GEREK'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${ogrenciler.length === 0 ? '<p class="p-8 text-center text-slate-400">Henüz öğrenci eklenmemiş.</p>' : ''}
+                    </div>
                 </div>
             </div>
-
-            <footer class="mt-12 text-center text-xs text-gray-400 uppercase tracking-widest">
-                Fuzzy Logic Engine • Render Cloud Platform
-            </footer>
         </div>
     </body>
     </html>
   `);
 });
 
-// 3. Sağlık ve API Kontrolü
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
-// 4. Hata Yönetimi
-app.use((err: any, req: any, res: any, next: any) => {
-  logger.error(err);
-  res.status(500).send("Sunucu hatası oluştu.");
+// ÖĞRENCİ EKLEME İŞLEMİ (Öğretmen Butona Basınca Çalışır)
+app.post("/ekle", (req, res) => {
+    const { ad, numara, puan } = req.body;
+    ogrenciler.push({
+        id: Date.now(),
+        ad,
+        numara,
+        puan: parseInt(puan),
+        durum: parseInt(puan) >= 50 ? "İyi" : "Gözlem"
+    });
+    res.redirect("/"); // Ekleme sonrası ana sayfaya dön
 });
 
 export default app;
