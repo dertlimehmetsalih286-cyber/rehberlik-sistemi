@@ -10,6 +10,11 @@ if (!rawPort) {
 
 const port = Number(rawPort);
 
-app.listen(port, "0.0.0.0", () => {
-  logger.info({ port }, "🚀 Sunucu basariyla calisti!");
+try {
+  app.listen(port, "0.0.0.0", () => {
+    logger.info({ port }, "Server listening");
+  });
+} catch (err) {
+  console.error("GERCEK HATA BURADA:", err);
+}
 });
