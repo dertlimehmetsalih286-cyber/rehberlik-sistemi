@@ -11,255 +11,197 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(pinoHttp({ logger }));
 
-// --- VERİ SETİ (HAFIZADA TUTULAN ÖĞRENCİ LİSTESİ) ---
+// --- GELİŞMİŞ VERİ SETİ ---
 let ogrenciler = [
-    { id: 1, ad: "Mehmet Salih", numara: "101", sinif: "10-B", puan: 25, durum: "Yönlendir", tarih: "2026-05-07", foto: "https://via.placeholder.com/150" },
-    { id: 2, ad: "Zeynep", numara: "102", sinif: "11-C", puan: 85, durum: "Gerekiyorsa Gözlem", tarih: "2026-05-06", foto: "https://via.placeholder.com/150" }
+    { id: 1, ad: "Mehmet Salih", numara: "101", sinif: "10-B", puan: 25, durum: "Yönlendir", foto: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400" },
+    { id: 2, ad: "Zeynep", numara: "102", sinif: "11-C", puan: 85, durum: "Gerekiyorsa Gözlem", foto: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400" }
+];
+
+let okullar = [
+    { ad: "Şehit Mehmet Acubucu İHL", ogrenciSayisi: 450, ortalama: 72, foto: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400" },
+    { ad: "Atatürk Anadolu Lisesi", ogrenciSayisi: 820, ortalama: 65, foto: "https://images.unsplash.com/photo-1541339907198-e08759dfc3ef?w=400" }
 ];
 
 app.get("/", (req, res) => {
     const page = req.query.page || 'login';
     const tab = req.query.tab || 'ozet';
-    const role = req.query.role || 'teacher'; 
-    const step = req.query.step || '1';
+    const role = req.query.role || 'teacher';
 
-    // 1. GİRİŞ EKRANLARI
-    if (page === 'login' || page === 'register' || page === 'forgot') {
-        return res.send(`
-        <!DOCTYPE html>
-        <html lang="tr">
-        <head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></head>
-        <body class="bg-slate-100 min-h-screen flex items-center justify-center font-sans p-4">
-            <div class="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 border border-slate-200 text-center">
-                <div class="inline-block bg-indigo-600 p-4 rounded-2xl mb-4 shadow-lg shadow-indigo-100"><i class="fas fa-book-open text-white text-2xl"></i></div>
-                <h1 class="text-2xl font-black text-slate-800 uppercase tracking-tighter mb-8">Rehberlik Sistemi</h1>
-                
-                <div class="space-y-4">
-                    <a href="/?page=dashboard&role=teacher&tab=ozet" class="flex items-center justify-between p-5 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg transition transform hover:scale-105">
-                        <span><i class="fas fa-chalkboard-teacher mr-3"></i>Öğretmen Girişi</span>
-                        <i class="fas fa-chevron-right opacity-50"></i>
-                    </a>
-                    <a href="/?page=dashboard&role=student&tab=profil" class="flex items-center justify-between p-5 border-2 border-slate-100 text-slate-700 rounded-2xl font-bold hover:border-indigo-600 transition transform hover:scale-105">
-                        <span><i class="fas fa-user-graduate mr-3 text-indigo-500"></i>Öğrenci Girişi</span>
-                        <i class="fas fa-chevron-right opacity-50"></i>
-                    </a>
-                </div>
-                <div class="mt-8 flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">
-                    <a href="#" class="hover:text-indigo-600">Şifremi Unuttum</a>
-                    <a href="#" class="hover:text-indigo-600">Yeni Kayıt</a>
-                </div>
-            </div>
-        </body>
-        </html>`);
+    if (page === 'login') {
+        return res.send(`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></head><body class="bg-slate-100 min-h-screen flex items-center justify-center font-sans"><div class="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-12 text-center border-t-8 border-indigo-600"><div class="inline-block bg-indigo-600 p-5 rounded-3xl mb-6 shadow-xl"><i class="fas fa-book-open text-white text-4xl"></i></div><h1 class="text-3xl font-black text-slate-800 tracking-tighter mb-10 uppercase">Rehberlik Sistemi</h1><div class="space-y-4"><a href="/?page=dashboard&role=teacher&tab=ozet" class="block p-5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg transform hover:-translate-y-1 transition uppercase">Öğretmen Girişi</a><a href="/?page=dashboard&role=student&tab=profil" class="block p-5 border-4 border-slate-50 text-slate-700 rounded-2xl font-black hover:border-indigo-600 transition transform hover:-translate-y-1 uppercase">Öğrenci Girişi</a></div></div></body></html>`);
     }
 
-    // 2. ANA PANEL (YETKİLENDİRME VE GİZLENEBİLİR MENÜ)
     const isTeacher = role === 'teacher';
-    const currentStudent = ogrenciler[0]; // Giriş yapan öğrenciyi simüle ediyoruz
 
     res.send(`
     <!DOCTYPE html>
     <html lang="tr">
     <head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        #sidebar { transition: width 0.3s ease; width: 280px; overflow: hidden; }
+        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; }
         #sidebar.collapsed { width: 85px; }
-        .nav-text { transition: opacity 0.2s; opacity: 1; }
-        .collapsed .nav-text { opacity: 0; display: none; }
-        .tab-active { background-color: #1e293b; color: white !important; shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .nav-text { transition: opacity 0.2s; }
+        .collapsed .nav-text { display: none; }
+        .tab-active { background: #1e293b; color: white !important; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); }
+        .stat-bar { transition: height 1s ease-out; }
     </style></head>
     <body class="bg-slate-50 flex min-h-screen font-sans text-slate-900">
         
         <aside id="sidebar" class="bg-white border-r flex flex-col h-screen sticky top-0 z-50">
-            <div class="p-6 border-b flex items-center">
-                <div class="flex items-center text-indigo-600 cursor-pointer" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
-                    <i class="fas fa-book-open text-2xl"></i>
-                    <span class="nav-text font-black ml-4 text-xl tracking-tighter uppercase">Rehberlik</span>
-                </div>
+            <div class="p-6 border-b flex items-center justify-center cursor-pointer" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+                <i class="fas fa-book-open text-indigo-600 text-2xl"></i>
+                <span class="nav-text font-black ml-4 text-xl tracking-tighter uppercase">Rehberlik</span>
             </div>
             <nav class="p-4 space-y-2 flex-1">
                 ${isTeacher ? `
-                    <a href="/?page=dashboard&role=teacher&tab=ozet" class="flex items-center p-3 rounded-xl ${tab === 'ozet' ? 'tab-active' : 'text-slate-500 hover:bg-slate-50'}">
-                        <i class="fas fa-th-large w-6 text-center"></i><span class="nav-text ml-4 font-bold text-sm uppercase">Özet</span>
+                    <a href="/?page=dashboard&role=teacher&tab=ozet" class="flex items-center p-4 rounded-2xl ${tab === 'ozet' ? 'tab-active' : 'text-slate-400 hover:bg-slate-50'}">
+                        <i class="fas fa-chart-bar w-6 text-center"></i><span class="nav-text ml-4 font-black text-xs uppercase">Özet</span>
                     </a>
-                    <a href="/?page=dashboard&role=teacher&tab=degerlendirme" class="flex items-center p-3 rounded-xl ${tab === 'degerlendirme' ? 'tab-active' : 'text-slate-500 hover:bg-slate-50'}">
-                        <i class="fas fa-magic w-6 text-center"></i><span class="nav-text ml-4 font-bold text-sm uppercase text-indigo-500">Akıllı Değerlendirme</span>
+                    <a href="/?page=dashboard&role=teacher&tab=degerlendirme" class="flex items-center p-4 rounded-2xl ${tab === 'degerlendirme' ? 'tab-active' : 'text-slate-400 hover:bg-slate-50'}">
+                        <i class="fas fa-robot w-6 text-center"></i><span class="nav-text ml-4 font-black text-xs uppercase">Değerlendirme</span>
                     </a>
-                    <a href="/?page=dashboard&role=teacher&tab=ogrenciler" class="flex items-center p-3 rounded-xl ${tab === 'ogrenciler' ? 'tab-active' : 'text-slate-500 hover:bg-slate-50'}">
-                        <i class="fas fa-users w-6 text-center"></i><span class="nav-text ml-4 font-bold text-sm uppercase">Öğrenciler</span>
+                    <a href="/?page=dashboard&role=teacher&tab=ogrenciler" class="flex items-center p-4 rounded-2xl ${tab === 'ogrenciler' ? 'tab-active' : 'text-slate-400 hover:bg-slate-50'}">
+                        <i class="fas fa-user-friends w-6 text-center"></i><span class="nav-text ml-4 font-black text-xs uppercase">Öğrenciler</span>
                     </a>
                 ` : ''}
-                <a href="/?page=dashboard&role=${role}&tab=profil" class="flex items-center p-3 rounded-xl ${tab === 'profil' ? 'tab-active' : 'text-slate-500 hover:bg-slate-50'}">
-                    <i class="fas fa-user-circle w-6 text-center"></i><span class="nav-text ml-4 font-bold text-sm uppercase">Profil</span>
+                <a href="/?page=dashboard&role=${role}&tab=profil" class="flex items-center p-4 rounded-2xl ${tab === 'profil' ? 'tab-active' : 'text-slate-400 hover:bg-slate-50'}">
+                    <i class="fas fa-id-card w-6 text-center"></i><span class="nav-text ml-4 font-black text-xs uppercase">Profil</span>
                 </a>
-                <a href="/?page=dashboard&role=${role}&tab=okullar" class="flex items-center p-3 rounded-xl ${tab === 'okullar' ? 'tab-active' : 'text-slate-500 hover:bg-slate-50'}">
-                    <i class="fas fa-school w-6 text-center"></i><span class="nav-text ml-4 font-bold text-sm uppercase">Okullar</span>
+                <a href="/?page=dashboard&role=${role}&tab=okullar" class="flex items-center p-4 rounded-2xl ${tab === 'okullar' ? 'tab-active' : 'text-slate-400 hover:bg-slate-50'}">
+                    <i class="fas fa-university w-6 text-center"></i><span class="nav-text ml-4 font-black text-xs uppercase">Okullar</span>
                 </a>
             </nav>
-            <div class="p-6 border-t"><a href="/?page=login" class="text-red-500 font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-power-off mr-2"></i> Çıkış</a></div>
+            <div class="p-6 border-t"><a href="/?page=login" class="text-red-500 font-black text-[10px] uppercase tracking-widest"><i class="fas fa-power-off"></i></a></div>
         </aside>
 
         <main class="flex-1 p-10 overflow-y-auto">
             
             ${tab === 'ozet' && isTeacher ? `
-                <h2 class="text-3xl font-black mb-10 tracking-tighter uppercase italic">Yönetici Paneli / Özet</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col justify-center items-center">
-                        <i class="fas fa-user-graduate text-blue-500 mb-2"></i>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Toplam Öğrenci</p>
-                        <p class="text-3xl font-black">${ogrenciler.length}</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm text-center">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Toplam Kapasite</p>
+                        <p class="text-4xl font-black text-indigo-600">1000+</p>
                     </div>
-                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col justify-center items-center">
-                        <i class="fas fa-check-double text-green-500 mb-2"></i>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Değerlendirme</p>
-                        <p class="text-3xl font-black">${ogrenciler.length + 5}</p>
+                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm text-center border-l-8 border-l-emerald-500">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gözlem Gerekmez</p>
+                        <p class="text-4xl font-black text-emerald-500">640</p>
                     </div>
-                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col justify-center items-center">
-                        <i class="fas fa-chart-line text-indigo-500 mb-2"></i>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Ortalama Puan</p>
-                        <p class="text-3xl font-black text-indigo-600">55.0</p>
+                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm text-center border-l-8 border-l-orange-500">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gözlem Gerekebilir</p>
+                        <p class="text-4xl font-black text-orange-500">210</p>
                     </div>
-                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm border-2 border-red-100 flex flex-col justify-center items-center">
-                        <i class="fas fa-exclamation-circle text-red-500 mb-2"></i>
-                        <p class="text-[10px] font-bold text-red-400 uppercase">Dikkat Gereken</p>
-                        <p class="text-3xl font-black text-red-600">${ogrenciler.filter(o => o.puan < 40).length}</p>
+                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm text-center border-l-8 border-l-red-500">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Yönlendir Grubu</p>
+                        <p class="text-4xl font-black text-red-500">150</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm">
-                        <h3 class="font-bold text-slate-400 text-xs mb-8 uppercase tracking-widest">Karar Dağılımı</h3>
-                        <div class="flex justify-between items-end h-40 space-x-6 border-b pb-2">
-                            <div class="bg-emerald-400 w-full rounded-t-2xl h-[70%]" title="Gereksiz"></div>
-                            <div class="bg-orange-400 w-full rounded-t-2xl h-[20%]" title="Gözlem"></div>
-                            <div class="bg-red-500 w-full rounded-t-2xl h-[40%]" title="Yönlendir"></div>
+                <div class="bg-white p-10 rounded-[3rem] border shadow-sm">
+                    <h3 class="font-black text-slate-800 uppercase text-xs mb-10 tracking-[0.2em]">Öğrenci Dağılım Grafiği (N:1000)</h3>
+                    <div class="flex items-end space-x-12 h-80 border-b pb-4 relative">
+                        <div class="absolute -left-10 h-full flex flex-col justify-between text-[10px] font-bold text-slate-300">
+                            <span>1000</span><span>750</span><span>500</span><span>250</span><span>0</span>
                         </div>
+                        <div class="flex-1 bg-emerald-500 stat-bar rounded-t-3xl shadow-lg" style="height: 64%"></div>
+                        <div class="flex-1 bg-orange-500 stat-bar rounded-t-3xl shadow-lg" style="height: 21%"></div>
+                        <div class="flex-1 bg-red-500 stat-bar rounded-t-3xl shadow-lg" style="height: 15%"></div>
                     </div>
-                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm overflow-hidden">
-                        <h3 class="font-bold text-indigo-500 text-xs mb-6 uppercase tracking-widest">Son Aktivite (Eklenenler)</h3>
-                        <div class="space-y-3">
-                            ${ogrenciler.slice(-3).reverse().map(o => `
-                                <div class="flex items-center p-3 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                    <div class="bg-white p-2 rounded-full mr-4"><i class="fas fa-user-plus text-indigo-400"></i></div>
-                                    <div><p class="font-bold text-sm">${o.ad}</p><p class="text-[10px] text-slate-400">${o.tarih} - Listeye eklendi.</p></div>
-                                </div>
-                            `).join('')}
-                        </div>
+                    <div class="flex justify-between mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">
+                        <span>Sorunsuz Grup</span><span>Takip Grubu</span><span>Kritik Grup</span>
                     </div>
                 </div>
             ` : ''}
 
             ${tab === 'degerlendirme' && isTeacher ? `
-                <h2 class="text-3xl font-black mb-10 tracking-tighter uppercase italic text-indigo-600">Akıllı Değerlendirme Sistemi</h2>
-                <form action="/degerlendir-kaydet" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm space-y-6">
-                        <h3 class="font-bold text-slate-400 text-xs uppercase mb-4 tracking-widest">Öğrenci Giriş Verileri</h3>
-                        <input type="text" name="ad" placeholder="Ad Soyad" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                        <input type="text" name="numara" placeholder="Okul No" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                        <input type="text" name="sinif" placeholder="Sınıf" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                        <div class="space-y-4 pt-4 font-bold text-[10px] text-slate-400 uppercase">
-                            <div><label>1. Disiplin</label><input type="range" name="p1" min="0" max="10" class="w-full accent-indigo-600"></div>
-                            <div><label>2. Sosyal Uyum</label><input type="range" name="p2" min="0" max="10" class="w-full accent-indigo-600"></div>
-                            <div><label>3. Akademik Başarı</label><input type="range" name="p3" min="0" max="10" class="w-full accent-indigo-600"></div>
-                            <div><label>4. Devamsızlık</label><input type="range" name="p4" min="0" max="10" class="w-full accent-indigo-600"></div>
-                            <div><label>5. Aile Durumu</label><input type="range" name="p5" min="0" max="10" class="w-full accent-indigo-600"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="bg-white p-10 rounded-[3rem] border shadow-sm">
+                        <h3 class="font-black text-slate-400 text-[10px] uppercase mb-10 tracking-widest text-center">Analiz Kriterleri</h3>
+                        <div class="space-y-8">
+                            <div><label class="flex justify-between font-bold text-xs uppercase mb-3">Disiplin Geçmişi <span id="v1">5</span></label>
+                            <input type="range" min="0" max="10" value="5" class="w-full accent-indigo-600" oninput="updateScore()"></div>
+                            <div><label class="flex justify-between font-bold text-xs uppercase mb-3">Sosyal Uyum <span id="v2">5</span></label>
+                            <input type="range" min="0" max="10" value="5" class="w-full accent-indigo-600" oninput="updateScore()"></div>
+                            <div><label class="flex justify-between font-bold text-xs uppercase mb-3">Akademik Durum <span id="v3">5</span></label>
+                            <input type="range" min="0" max="10" value="5" class="w-full accent-indigo-600" oninput="updateScore()"></div>
                         </div>
-                        <button class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg transform hover:-translate-y-1 transition">SİSTEME KAYDET</button>
+                        <button class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl mt-12 uppercase tracking-widest">Sisteme Kaydet</button>
                     </div>
-                    <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm flex flex-col items-center justify-center text-center">
-                        <div class="w-48 h-48 rounded-full border-[12px] border-slate-50 flex items-center justify-center bg-slate-50 shadow-inner">
-                            <span class="text-5xl font-black text-indigo-600 tracking-tighter italic">!</span>
+                    <div class="bg-indigo-600 p-10 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center text-white">
+                        <div class="w-64 h-64 rounded-full border-[20px] border-indigo-400 flex flex-col items-center justify-center bg-indigo-700 shadow-inner transform hover:rotate-12 transition">
+                            <span id="liveScore" class="text-8xl font-black italic tracking-tighter text-white">50</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest opacity-50">Canlı Analiz</span>
                         </div>
-                        <p class="mt-8 font-bold text-slate-400 uppercase text-xs tracking-widest">Karar Analizi Bekleniyor</p>
+                        <p id="liveStatus" class="mt-10 text-2xl font-black uppercase italic tracking-widest">Gözlem Önerilir</p>
                     </div>
-                    <div class="bg-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl flex flex-col justify-center">
-                        <i class="fas fa-robot text-4xl mb-6 text-indigo-400"></i>
-                        <h4 class="text-xl font-bold mb-4 tracking-tight">Fuzzy Logic Engine</h4>
-                        <p class="opacity-60 text-sm leading-relaxed">Sistem, girdiğiniz 5 parametreyi okulun başarı ve disiplin standartlarına göre analiz eder. Sonuç, öğrenci listesinde ve öğrenci profilinde otomatik olarak yayınlanır.</p>
-                    </div>
-                </form>
+                </div>
+                <script>
+                    function updateScore() {
+                        const r = document.querySelectorAll('input[type="range"]');
+                        const score = Math.round((parseInt(r[0].value) + parseInt(r[1].value) + parseInt(r[2].value)) * 3.33);
+                        document.getElementById('liveScore').innerText = score;
+                        document.getElementById('liveStatus').innerText = score > 70 ? "SORUN YOK" : (score > 30 ? "GÖZLEM ÖNERİLİR" : "KRİTİK DURUM");
+                        document.getElementById('v1').innerText = r[0].value;
+                        document.getElementById('v2').innerText = r[1].value;
+                        document.getElementById('v3').innerText = r[2].value;
+                    }
+                </script>
             ` : ''}
 
             ${tab === 'ogrenciler' && isTeacher ? `
-                <h2 class="text-3xl font-black mb-10 tracking-tighter uppercase italic">Kayıtlı Veri Seti</h2>
-                <div class="bg-white rounded-[2.5rem] border shadow-sm overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-widest"><tr class="border-b">
-                            <th class="p-6">Öğrenci / Sınıf</th><th class="p-6">Numara</th><th class="p-6">Durum</th><th class="p-6 text-right">Karar Puanı</th>
-                        </tr></thead>
-                        <tbody class="divide-y">
-                            ${ogrenciler.map(o => `
-                                <tr class="hover:bg-slate-50 transition">
-                                    <td class="p-6"><div class="font-bold text-slate-800">${o.ad}</div><div class="text-[10px] text-slate-400">${o.sinif}</div></td>
-                                    <td class="p-6 text-sm font-mono text-slate-500">${o.numara}</td>
-                                    <td class="p-6"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${o.puan < 40 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${o.durum.toUpperCase()}</span></td>
-                                    <td class="p-6 text-right font-black text-indigo-600 italic text-xl">${o.puan}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    ${ogrenciler.map(o => `
+                        <div class="bg-white p-8 rounded-[2.5rem] border shadow-sm hover:shadow-xl transition cursor-pointer group">
+                            <div class="flex items-center space-x-6">
+                                <img src="${o.foto}" class="w-20 h-20 rounded-2xl object-cover border-4 border-slate-50 shadow-md group-hover:scale-110 transition">
+                                <div>
+                                    <h4 class="font-black text-slate-800 uppercase tracking-tighter">${o.ad}</h4>
+                                    <p class="text-[10px] font-black text-indigo-600 uppercase italic">${o.sinif} / No: ${o.numara}</p>
+                                </div>
+                            </div>
+                            <div class="mt-6 pt-6 border-t flex justify-between items-center">
+                                <span class="text-[10px] font-black text-slate-400 uppercase">Analiz Sonucu:</span>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-800 italic">${o.durum.toUpperCase()}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${tab === 'okullar' ? `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    ${okullar.map(okul => `
+                        <div class="bg-white rounded-[3rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition">
+                            <img src="${okul.foto}" class="w-full h-48 object-cover">
+                            <div class="p-8 flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-xl font-black text-slate-800 uppercase italic">${okul.ad}</h3>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mt-2 tracking-widest">${okul.ogrenciSayisi} Kayıtlı Öğrenci</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-4xl font-black text-indigo-600 tracking-tighter">${okul.ortalama}</span>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase">Puan Ortalama</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             ` : ''}
 
             ${tab === 'profil' ? `
-                <div class="max-w-2xl mx-auto bg-white p-12 rounded-[3.5rem] border shadow-sm text-center relative overflow-hidden">
-                    <div class="bg-indigo-600 h-24 absolute top-0 left-0 w-full opacity-10"></div>
-                    <div class="relative inline-block mb-10 mt-6">
-                        <img id="pImg" src="${currentStudent.foto}" class="w-44 h-44 rounded-full border-[10px] border-white shadow-2xl object-cover relative z-10">
-                        <button onclick="document.getElementById('fInp').click()" class="absolute bottom-2 right-2 bg-indigo-600 text-white p-4 rounded-full shadow-2xl z-20 hover:scale-110 transition"><i class="fas fa-camera"></i></button>
-                        <input type="file" id="fInp" class="hidden" accept="image/*" onchange="handlePImg(event)">
-                    </div>
-                    <h2 class="text-4xl font-black text-slate-800 tracking-tighter">${currentStudent.ad}</h2>
-                    <p class="text-indigo-600 font-bold uppercase tracking-[0.3em] text-[10px] mt-4">${currentStudent.sinif} / No: ${currentStudent.numara}</p>
-                    <div class="mt-12 grid grid-cols-2 gap-6">
-                        <div class="p-6 bg-slate-50 rounded-3xl border"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Rehberlik Sonucu</p><p class="font-black text-xl text-indigo-600 italic uppercase">${currentStudent.durum}</p></div>
-                        <div class="p-6 bg-slate-50 rounded-3xl border"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Puan</p><p class="font-black text-2xl text-slate-800">${currentStudent.puan}</p></div>
+                <div class="max-w-2xl mx-auto bg-white p-12 rounded-[4rem] border shadow-2xl text-center relative overflow-hidden">
+                    <div class="bg-indigo-600 h-32 absolute top-0 left-0 w-full opacity-10"></div>
+                    <img src="https://images.unsplash.com/photo-1544717297-fa95b3ee51f3?w=400" class="w-48 h-48 rounded-[3rem] border-8 border-white shadow-2xl mx-auto object-cover relative z-10">
+                    <h2 class="text-4xl font-black text-slate-800 tracking-tighter mt-8 uppercase italic">Öğretmen: Cemilay</h2>
+                    <p class="text-indigo-600 font-black uppercase tracking-[0.3em] text-[10px] mt-4 italic">Rehberlik & Karar Destek Uzmanı</p>
+                    <div class="mt-12 p-8 bg-slate-50 rounded-[3rem] border">
+                        <p class="text-sm italic text-slate-500 font-medium leading-relaxed">"Geleceğin kararları, bugünün verileriyle şekillenir."</p>
                     </div>
                 </div>
             ` : ''}
 
-            ${tab === 'okullar' ? `<div class="bg-indigo-600 p-20 rounded-[4rem] text-white shadow-2xl flex flex-col items-center justify-center text-center"> <i class="fas fa-award text-6xl mb-6 opacity-30"></i> <h2 class="text-5xl font-black uppercase tracking-tighter">Okul Başarı Panosu</h2> <p class="mt-6 opacity-60 max-w-md text-sm">Şehit Mehmet Acubucu İHL veritabanındaki tüm okulların genel performans ve rehberlik dağılımı burada şeffaf olarak paylaşılır.</p></div>` : ''}
         </main>
-
-        <script>
-            function handlePImg(e) {
-                const img = document.getElementById('pImg');
-                const file = e.target.files[0];
-                if(file) {
-                    alert("Yüz tanıma doğrulanıyor... Lütfen bekleyin.");
-                    setTimeout(() => {
-                        img.src = URL.createObjectURL(file);
-                    }, 1500);
-                }
-            }
-        </script>
     </body>
     </html>`);
-});
-
-// --- VERİ KAYIT YOLU (DEĞERLENDİRMEYİ VERİ SETİNE EKLER) ---
-app.post("/degerlendir-kaydet", (req, res) => {
-    const { ad, numara, sinif, p1, p2, p3, p4, p5 } = req.body;
-    
-    // Basit Bulanık Mantık Hesaplaması (Ortalama Alıyoruz)
-    const ortalama = Math.round((parseInt(p1) + parseInt(p2) + parseInt(p3) + parseInt(p4) + parseInt(p5)) * 2);
-    let durum = "Sorun Yok";
-    if (ortalama < 40) durum = "Yönlendir";
-    else if (ortalama < 70) durum = "Gerekiyorsa Gözlem";
-
-    // Veri Setine (Diziye) Ekle
-    ogrenciler.push({
-        id: Date.now(),
-        ad,
-        numara,
-        sinif,
-        puan: ortalama,
-        durum: durum,
-        tarih: new Date().toISOString().split('T')[0],
-        foto: "https://via.placeholder.com/150"
-    });
-
-    res.redirect("/?page=dashboard&role=teacher&tab=ogrenciler");
 });
 
 export default app;
