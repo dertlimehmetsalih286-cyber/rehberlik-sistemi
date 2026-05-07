@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import { logger } from "./lib/logger.";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes/index.js"; // Uzantı .js kalsın, ESM kuralıdır
