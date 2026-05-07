@@ -4,14 +4,14 @@ import pg from 'pg';
 const { Pool } = pg;
 
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL tanimlanmamis!");
+  throw new Error("DATABASE_URL değişkeni tanımlanmamış! Lütfen Render panelinden kontrol edin.");
 }
 
+// Render üzerindeki veritabanı bağlantısı için gerekli SSL ayarları
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // RENDER İÇİN KRİTİK AYAR:
   ssl: {
-    rejectUnauthorized: false // Bu satır bağlantıdaki SSL sertifika hatasını çözer
+    rejectUnauthorized: false // Bu satır, sertifika doğrulama hatasını aşar ve bağlantıyı sağlar.
   }
 });
 
