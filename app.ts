@@ -13,7 +13,7 @@ app.use(pinoHttp({ logger }));
 // --- GELİŞMİŞ VERİ SETİ ---
 let ogrenciler = [
     { id: 1, ad: "Mehmet Salih", numara: "101", sinif: "10-B", puan: 15, durum: "Yönlendir", foto: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400", tc: "12345678901", dogum: "2010", adres: "İstanbul/Üsküdar" },
-    { id: 2, ad: "Zeynep Kaya", numara: "102", sinif: "11-C", puan: 85, durum: "Sorun Yok", foto: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400", tc: "98765432109", dogum: "2009", adres: "Ankara/Çankaya" }
+    { id: 2, ad: "ayşe", numara: "102", sinif: "11-C", puan: 85, durum: "Sorun Yok", foto: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400", tc: "98765432109", dogum: "2009", adres: "Ankara/Çankaya" }
 ];
 
 let okullar = [
