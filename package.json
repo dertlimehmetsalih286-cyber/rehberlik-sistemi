@@ -1,22 +1,18 @@
 {
   "name": "rehberlik-sistemi",
   "version": "1.0.0",
-  "type": "module",
+  "description": "",
+  "main": "index.ts",
   "scripts": {
-    "start": "npx tsx index.ts",
-    "build": "npm install"
+    "start": "ts-node index.ts",
+    "dev": "ts-node-dev index.ts"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "pino": "^8.19.0",
-    "pino-http": "^9.0.0",
-    "mssql": "^10.0.1"
+    "pino": "^9.0.0",
+    "pino-http": "^10.0.0",
     "pino-pretty": "^11.0.0",
-    "pg": "^8.11.3",
-    "drizzle-orm": "^0.29.3",
-    "tsx": "^4.7.1",
-    "typescript": "^5.3.3"
+    "mssql": "^10.0.1"
   }
 }
-
